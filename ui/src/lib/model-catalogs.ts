@@ -989,12 +989,24 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
   claude: {
     provider: 'claude',
     displayName: 'Claude (Anthropic)',
-    defaultModel: 'claude-sonnet-5',
+    defaultModel: 'claude-sonnet-5-5',
     models: [
+      {
+        id: 'claude-sonnet-5-5',
+        name: 'Claude Sonnet 5.5',
+        description: 'Latest Sonnet model',
+        extendedContext: true,
+        presetMapping: {
+          default: 'claude-sonnet-5-5',
+          opus: 'claude-opus-5-5',
+          sonnet: 'claude-sonnet-5-5',
+          haiku: 'claude-haiku-4-5-20251001',
+        },
+      },
       {
         id: 'claude-sonnet-5',
         name: 'Claude Sonnet 5',
-        description: 'Latest Sonnet model',
+        description: 'Previous Sonnet model',
         extendedContext: true,
         presetMapping: {
           default: 'claude-sonnet-5',
@@ -1011,7 +1023,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-fable-5-1',
           opus: 'claude-fable-5-1',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },
@@ -1023,7 +1035,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-fable-5',
           opus: 'claude-fable-5',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },
@@ -1035,7 +1047,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-opus-5-5',
           opus: 'claude-opus-5-5',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },
@@ -1047,7 +1059,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-opus-5',
           opus: 'claude-opus-5',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },
@@ -1059,7 +1071,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-opus-4-8',
           opus: 'claude-opus-4-8',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },
@@ -1071,7 +1083,7 @@ export const MODEL_CATALOGS: Record<string, ProviderCatalog> = {
         presetMapping: {
           default: 'claude-opus-4-7',
           opus: 'claude-opus-4-7',
-          sonnet: 'claude-sonnet-5',
+          sonnet: 'claude-sonnet-5-5',
           haiku: 'claude-haiku-4-5-20251001',
         },
       },

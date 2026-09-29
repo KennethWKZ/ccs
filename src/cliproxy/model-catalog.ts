@@ -527,12 +527,29 @@ export const MODEL_CATALOG: Partial<Record<CLIProxyProvider, ProviderCatalog>> =
   claude: {
     provider: 'claude',
     displayName: 'Claude (Anthropic)',
-    defaultModel: 'claude-sonnet-5',
+    defaultModel: 'claude-sonnet-5-5',
     models: [
+      {
+        id: 'claude-sonnet-5-5',
+        name: 'Claude Sonnet 5.5',
+        description: 'Latest Sonnet model (1M context, 128K output)',
+        contextWindow: 1000000,
+        nativeImageInput: true,
+        // Adaptive thinking; Anthropic rejects `thinking.type: "disabled"` and manual
+        // budget_tokens with 400 (its off switch is `between_tools`, which CCS does not
+        // emit), so zero is not allowed. Effort levels are recalibrated from Sonnet 5.
+        thinking: {
+          type: 'levels',
+          levels: ['low', 'medium', 'high', 'xhigh', 'max'],
+          maxLevel: 'max',
+          dynamicAllowed: true,
+        },
+        extendedContext: true,
+      },
       {
         id: 'claude-sonnet-5',
         name: 'Claude Sonnet 5',
-        description: 'Latest Sonnet model',
+        description: 'Previous Sonnet model',
         contextWindow: 1000000,
         nativeImageInput: true,
         // Sonnet 5 uses adaptive thinking; manual budget_tokens is rejected with 400.
@@ -583,6 +600,8 @@ export const MODEL_CATALOG: Partial<Record<CLIProxyProvider, ProviderCatalog>> =
         description: 'Most capable model for long-running agentic coding and knowledge work',
         contextWindow: 1000000,
         nativeImageInput: true,
+        // Thinking is always on: Anthropic rejects `thinking.type: "disabled"` and
+        // manual budget_tokens with 400. Default effort is `medium`, not `high`.
         thinking: {
           type: 'levels',
           levels: ['low', 'medium', 'high', 'xhigh', 'max'],

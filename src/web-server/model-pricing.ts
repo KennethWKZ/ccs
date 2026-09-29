@@ -232,6 +232,27 @@ const PRICING_REGISTRY: Record<string, ModelPricing> = {
     cacheCreationPerMillion: 2.5,
     cacheReadPerMillion: 0.2,
   },
+  // Claude Sonnet 5.5 ($2/$10) — same rates as Sonnet 5 (released 2026-09-28).
+  // Standard 0.1x cache-read multiplier, no fast mode. Without these entries the
+  // id falls through to the $3/$15 unknown-model fallback and overstates cost 1.5x.
+  'claude-sonnet-5-5': {
+    inputPerMillion: 2.0,
+    outputPerMillion: 10.0,
+    cacheCreationPerMillion: 2.5,
+    cacheReadPerMillion: 0.2,
+  },
+  'claude-sonnet-5-5-thinking': {
+    inputPerMillion: 2.0,
+    outputPerMillion: 10.0,
+    cacheCreationPerMillion: 2.5,
+    cacheReadPerMillion: 0.2,
+  },
+  'claude-sonnet-5.5': {
+    inputPerMillion: 2.0,
+    outputPerMillion: 10.0,
+    cacheCreationPerMillion: 2.5,
+    cacheReadPerMillion: 0.2,
+  },
   // Claude 4 Opus ($15/$75)
   'claude-4-opus-20250514': {
     inputPerMillion: 15.0,
