@@ -188,7 +188,23 @@ describe('Model Catalog', () => {
     });
     it('has correct default model', () => {
       const { MODEL_CATALOG } = modelCatalog;
-      assert.strictEqual(MODEL_CATALOG.claude.defaultModel, 'claude-sonnet-5');
+      assert.strictEqual(MODEL_CATALOG.claude.defaultModel, 'claude-sonnet-5-5');
+    });
+
+    it('includes Claude Sonnet 5.5 with adaptive levels, 1M context, and no zero budget', () => {
+      const { MODEL_CATALOG } = modelCatalog;
+      const sonnet55 = MODEL_CATALOG.claude.models.find((m) => m.id === 'claude-sonnet-5-5');
+      assert(sonnet55, 'Should include Claude Sonnet 5.5');
+      assert.strictEqual(sonnet55.name, 'Claude Sonnet 5.5');
+      assert.strictEqual(sonnet55.contextWindow, 1000000);
+      assert.strictEqual(sonnet55.thinking.type, 'levels');
+      assert.deepStrictEqual(sonnet55.thinking.levels, ['low', 'medium', 'high', 'xhigh', 'max']);
+      assert.strictEqual(sonnet55.thinking.maxLevel, 'max');
+      assert.strictEqual(sonnet55.thinking.dynamicAllowed, true);
+      // `thinking.type: "disabled"` returns 400 on Sonnet 5.5.
+      assert.strictEqual(sonnet55.thinking.zeroAllowed, undefined);
+      assert.strictEqual(sonnet55.nativeImageInput, true);
+      assert.strictEqual(sonnet55.extendedContext, true);
     });
 
     it('includes Claude Sonnet 5 with adaptive levels and extended context', () => {
