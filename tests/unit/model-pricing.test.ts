@@ -301,6 +301,47 @@ describe('model-pricing', () => {
       const gpt54 = getModelPricing('gpt-5.4');
       expect(legacyMax).toEqual(gpt54);
     });
+    it('should return correct pricing for GPT-6.1 Sol, GPT-6 Sol, and GPT-6 Luna with tuning and fast mode', () => {
+      const sol61 = getModelPricing('gpt-6.1-sol');
+      expect(sol61.inputPerMillion).toBe(2.0);
+      expect(sol61.outputPerMillion).toBe(10.0);
+      expect(sol61.cacheCreationPerMillion).toBe(2.5);
+      expect(sol61.cacheReadPerMillion).toBe(0.1);
+
+      const sol61Fast = getModelPricing('gpt-6.1-sol-fast');
+      expect(sol61Fast.inputPerMillion).toBe(4.0);
+      expect(sol61Fast.outputPerMillion).toBe(20.0);
+      expect(sol61Fast.cacheCreationPerMillion).toBe(5.0);
+      expect(sol61Fast.cacheReadPerMillion).toBe(0.2);
+
+      const sol61MaxFast = getModelPricing('gpt-6.1-sol-max-fast');
+      expect(sol61MaxFast.inputPerMillion).toBe(4.0);
+      expect(sol61MaxFast.outputPerMillion).toBe(20.0);
+
+      const sol6 = getModelPricing('gpt-6-sol');
+      expect(sol6.inputPerMillion).toBe(2.0);
+      expect(sol6.outputPerMillion).toBe(10.0);
+      expect(sol6.cacheCreationPerMillion).toBe(2.5);
+      expect(sol6.cacheReadPerMillion).toBe(0.2);
+
+      const sol6None = getModelPricing('gpt-6-sol-none');
+      expect(sol6None.inputPerMillion).toBe(2.0);
+      expect(sol6None.outputPerMillion).toBe(10.0);
+
+      const sol6Fast = getModelPricing('gpt-6-sol-fast');
+      expect(sol6Fast.inputPerMillion).toBe(4.0);
+      expect(sol6Fast.outputPerMillion).toBe(20.0);
+
+      const luna6 = getModelPricing('gpt-6-luna');
+      expect(luna6.inputPerMillion).toBe(0.1);
+      expect(luna6.outputPerMillion).toBe(0.5);
+      expect(luna6.cacheCreationPerMillion).toBeCloseTo(0.125);
+      expect(luna6.cacheReadPerMillion).toBeCloseTo(0.01);
+
+      const luna6NoneFast = getModelPricing('gpt-6-luna-none-fast');
+      expect(luna6NoneFast.inputPerMillion).toBe(0.2);
+      expect(luna6NoneFast.outputPerMillion).toBe(1.0);
+    });
     it('does not strip tuning suffixes from non-Codex models', () => {
       const fallback = getModelPricing('unknown-model-xyz');
       const geminiFlash = getModelPricing('gemini-2.5-flash');
@@ -548,6 +589,9 @@ describe('model-pricing', () => {
       const models = getKnownModels();
       expect(models).toContain('claude-sonnet-5');
       expect(models).toContain('claude-sonnet-5-5');
+      expect(models).toContain('gpt-6.1-sol');
+      expect(models).toContain('gpt-6-sol');
+      expect(models).toContain('gpt-6-luna');
     });
   });
 

@@ -553,6 +553,38 @@ const PRICING_REGISTRY: Record<string, ModelPricing> = {
       fast: buildRates(20.0, 100.0),
     },
   },
+  // GPT-6.1 Sol — Official pricing: ≤272k: $2/$10, 50% cheaper cache read $0.10, fast 2x ($4/$20).
+  // Using standard ≤272k pricing as default (per-request >272k long-context billed at 2x input / 1.5x output).
+  'gpt-6.1-sol': {
+    inputPerMillion: 2.0,
+    outputPerMillion: 10.0,
+    cacheCreationPerMillion: 2.5,
+    cacheReadPerMillion: 0.1,
+    serviceTiers: {
+      fast: {
+        inputPerMillion: 4.0,
+        outputPerMillion: 20.0,
+        cacheCreationPerMillion: 5.0,
+        cacheReadPerMillion: 0.2,
+      },
+    },
+  },
+  // GPT-6 Sol — Official pricing: ≤272k: $2/$10, fast 2x ($4/$20).
+  // Using standard ≤272k pricing as default.
+  'gpt-6-sol': {
+    ...buildRates(2.0, 10.0),
+    serviceTiers: {
+      fast: buildRates(4.0, 20.0),
+    },
+  },
+  // GPT-6 Luna — Official pricing: ≤272k: $0.10/$0.50, fast 2x ($0.20/$1.00).
+  // Using standard ≤272k pricing as default.
+  'gpt-6-luna': {
+    ...buildRates(0.1, 0.5),
+    serviceTiers: {
+      fast: buildRates(0.2, 1.0),
+    },
+  },
   // ---------------------------------------------------------------------------
   // Google Gemini Models - Source: better-ccusage
   // ---------------------------------------------------------------------------
@@ -998,7 +1030,7 @@ const NORMALIZED_PRICING_REGISTRY: Record<string, ModelPricing> = Object.entries
 }, {});
 
 const CODEX_PRICING_TUNING_REGEX =
-  /(?:-(?:minimal|low|medium|high|xhigh|max)(?:-fast)?|-fast(?:-(?:minimal|low|medium|high|xhigh|max))?|-fast)$/i;
+  /(?:-(?:none|minimal|low|medium|high|xhigh|max)(?:-fast)?|-fast(?:-(?:none|minimal|low|medium|high|xhigh|max))?|-fast)$/i;
 
 function isCodexTunableGptModel(modelName: string): boolean {
   return /^gpt-[56]/i.test(modelName) || /^codex/i.test(modelName);
@@ -1174,7 +1206,6 @@ function resolveBasePricing(model: string, options: PricingLookupOptions): Model
   // Fallback to unknown model pricing
   return UNKNOWN_MODEL_PRICING;
 }
-
 /**
  * Calculate cost in USD from token usage and model
  * @param usage - Token counts (input, output, cache creation, cache read)

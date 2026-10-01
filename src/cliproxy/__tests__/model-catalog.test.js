@@ -352,6 +352,44 @@ describe('Model Catalog', () => {
       });
       assert.deepStrictEqual(astra.codexServiceTiers, ['fast']);
     });
+    it('includes GPT-6.1 Sol with 1.05M context, max effort level, and fast mode', () => {
+      const sol61 = modelCatalog.MODEL_CATALOG.codex.models.find((m) => m.id === 'gpt-6.1-sol');
+      assert(sol61, 'Should include GPT-6.1 Sol');
+      assert.strictEqual(sol61.contextWindow, 1050000);
+      assert.deepStrictEqual(sol61.thinking, {
+        type: 'levels',
+        levels: ['low', 'medium', 'high', 'xhigh', 'max'],
+        maxLevel: 'max',
+        dynamicAllowed: false,
+      });
+      assert.deepStrictEqual(sol61.codexServiceTiers, ['fast']);
+    });
+    it('includes GPT-6 Sol with 1.05M context, none effort, max effort level, and fast mode', () => {
+      const sol6 = modelCatalog.MODEL_CATALOG.codex.models.find((m) => m.id === 'gpt-6-sol');
+      assert(sol6, 'Should include GPT-6 Sol');
+      assert.strictEqual(sol6.contextWindow, 1050000);
+      assert.deepStrictEqual(sol6.thinking, {
+        type: 'levels',
+        levels: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+        maxLevel: 'max',
+        zeroAllowed: true,
+        dynamicAllowed: false,
+      });
+      assert.deepStrictEqual(sol6.codexServiceTiers, ['fast']);
+    });
+    it('includes GPT-6 Luna with 1.05M context, none effort, max effort level, and fast mode', () => {
+      const luna6 = modelCatalog.MODEL_CATALOG.codex.models.find((m) => m.id === 'gpt-6-luna');
+      assert(luna6, 'Should include GPT-6 Luna');
+      assert.strictEqual(luna6.contextWindow, 1050000);
+      assert.deepStrictEqual(luna6.thinking, {
+        type: 'levels',
+        levels: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+        maxLevel: 'max',
+        zeroAllowed: true,
+        dynamicAllowed: false,
+      });
+      assert.deepStrictEqual(luna6.codexServiceTiers, ['fast']);
+    });
     it('includes Sol with 272k context, max effort level, and fast mode', () => {
       const sol = modelCatalog.MODEL_CATALOG.codex.models.find((m) => m.id === 'gpt-5.6-sol');
       assert(sol, 'Should include GPT-5.6 Sol');
@@ -387,6 +425,9 @@ describe('Model Catalog', () => {
       const ids = MODEL_CATALOG.codex.models.map((m) => m.id);
       assert.deepStrictEqual(ids, [
         'gpt-6-astra',
+        'gpt-6.1-sol',
+        'gpt-6-sol',
+        'gpt-6-luna',
         'gpt-5.6-sol',
         'gpt-5.6-terra',
         'gpt-5.6-luna',

@@ -33,7 +33,7 @@ export interface ThinkingSupport {
   /** Valid level names (for levels type) */
   levels?: string[];
   /** Maximum reasoning effort level (caps effort at this level for levels type) */
-  maxLevel?: 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
+  maxLevel?: 'none' | 'minimal' | 'low' | 'medium' | 'high' | 'xhigh' | 'max';
   /** Whether zero/disabled thinking is allowed */
   zeroAllowed?: boolean;
   /** Whether dynamic/auto thinking is allowed */
@@ -203,6 +203,49 @@ export const MODEL_CATALOG: Partial<Record<CLIProxyProvider, ProviderCatalog>> =
           type: 'levels',
           levels: ['low', 'medium', 'high', 'xhigh', 'max'],
           maxLevel: 'max',
+          dynamicAllowed: false,
+        },
+        codexServiceTiers: ['fast'],
+      },
+      {
+        id: 'gpt-6.1-sol',
+        name: 'GPT-6.1 Sol',
+        tier: 'pro',
+        description: 'Latest frontier agentic coding model (1.05M context, 128K output).',
+        contextWindow: 1050000,
+        thinking: {
+          type: 'levels',
+          levels: ['low', 'medium', 'high', 'xhigh', 'max'],
+          maxLevel: 'max',
+          dynamicAllowed: false,
+        },
+        codexServiceTiers: ['fast'],
+      },
+      {
+        id: 'gpt-6-sol',
+        name: 'GPT-6 Sol',
+        tier: 'pro',
+        description: 'Frontier agentic coding model (1.05M context, 128K output).',
+        contextWindow: 1050000,
+        thinking: {
+          type: 'levels',
+          levels: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+          maxLevel: 'max',
+          zeroAllowed: true,
+          dynamicAllowed: false,
+        },
+        codexServiceTiers: ['fast'],
+      },
+      {
+        id: 'gpt-6-luna',
+        name: 'GPT-6 Luna',
+        description: 'Fast and affordable lightweight agentic reasoning model (1.05M context).',
+        contextWindow: 1050000,
+        thinking: {
+          type: 'levels',
+          levels: ['none', 'low', 'medium', 'high', 'xhigh', 'max'],
+          maxLevel: 'max',
+          zeroAllowed: true,
           dynamicAllowed: false,
         },
         codexServiceTiers: ['fast'],
@@ -797,7 +840,7 @@ export function findModel(provider: CLIProxyProvider, modelId: string): ModelEnt
   if (provider === 'codex') {
     for (const candidate of [...lookupCandidates]) {
       const tuningMatch = candidate.match(
-        /^(.*?)(?:-(?:minimal|low|medium|high|xhigh|max)(?:-fast)?|-fast(?:-(?:minimal|low|medium|high|xhigh|max))?)$/i
+        /^(.*?)(?:-(?:none|minimal|low|medium|high|xhigh|max)(?:-fast)?|-fast(?:-(?:none|minimal|low|medium|high|xhigh|max))?)$/i
       );
       if (tuningMatch?.[1]) {
         lookupCandidates.add(tuningMatch[1].trim());
