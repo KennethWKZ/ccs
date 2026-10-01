@@ -327,6 +327,21 @@ describe('model-pricing', () => {
       expect(sonnet5.cacheCreationPerMillion).toBe(2.5);
       expect(sonnet5.cacheReadPerMillion).toBe(0.2);
     });
+    it('should return Sonnet 5 rates for every Claude Sonnet 5.5 id variant', () => {
+      // Sonnet 5.5 keeps Sonnet 5's $2/$10 pricing; none of these ids may fall
+      // through to the $3/$15 unknown-model fallback.
+      for (const id of ['claude-sonnet-5-5', 'claude-sonnet-5-5-thinking', 'claude-sonnet-5.5']) {
+        const sonnet55 = getModelPricing(id);
+        expect(sonnet55.inputPerMillion).toBe(2.0);
+        expect(sonnet55.outputPerMillion).toBe(10.0);
+        expect(sonnet55.cacheCreationPerMillion).toBe(2.5);
+        expect(sonnet55.cacheReadPerMillion).toBe(0.2);
+        expect(sonnet55.serviceTiers).toBeUndefined();
+        expect(hasCustomPricing(id)).toBe(true);
+      }
+      // Date-stamped ids resolve via stripDateSuffix.
+      expect(getModelPricing('claude-sonnet-5-5-20260928').inputPerMillion).toBe(2.0);
+    });
     it('should return correct pricing for Claude Opus 5.5 and fast mode', () => {
       const opus55 = getModelPricing('claude-opus-5-5');
       expect(opus55.inputPerMillion).toBe(4.0);
@@ -532,6 +547,7 @@ describe('model-pricing', () => {
       // unknown-model fallback that happens to share Sonnet's $3/$15 rates.
       const models = getKnownModels();
       expect(models).toContain('claude-sonnet-5');
+      expect(models).toContain('claude-sonnet-5-5');
     });
   });
 
