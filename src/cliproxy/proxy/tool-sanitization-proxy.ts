@@ -23,8 +23,14 @@ import {
   stripCodexEffortSuffix,
 } from '../ai-providers/model-id-normalizer';
 import { getModelMaxLevel } from '../model-catalog';
+import { normalizeCodexEffortForModel } from '../ai-providers/codex-reasoning-proxy';
 
 import { createLogger } from '../../services/logging';
+import {
+  readRequestBody,
+  RequestBodyTooLargeError,
+  respondRequestTooLarge,
+} from '../../utils/request-body';
 import {
   attachUpstreamResponseTimeout,
   writeForwardResponseHead,
@@ -108,10 +114,11 @@ function applyCodexModelTuningAlias(body: Record<string, unknown>): Record<strin
   const tunedBody: Record<string, unknown> = { ...body, model: parsed.baseModel };
 
   if (parsed.effort) {
+    const normalizedEffort = normalizeCodexEffortForModel(parsed.baseModel, parsed.effort);
     const existingReasoning = isRecord(body.reasoning) ? body.reasoning : {};
     tunedBody.reasoning = {
       ...existingReasoning,
-      effort: parsed.effort,
+      effort: normalizedEffort,
     };
   }
 
@@ -324,27 +331,6 @@ export class ToolSanitizationProxy {
     return this.port;
   }
 
-  private readBody(req: http.IncomingMessage): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const chunks: Buffer[] = [];
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      let total = 0;
-
-      req.on('data', (chunk: Buffer) => {
-        total += chunk.length;
-        if (total > maxSize) {
-          req.destroy();
-          reject(new Error('Request body too large (max 10MB)'));
-          return;
-        }
-        chunks.push(chunk);
-      });
-
-      req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-      req.on('error', reject);
-    });
-  }
-
   private async handleRequest(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {
     const method = req.method || 'GET';
     const requestPath = req.url || '/';
@@ -370,7 +356,7 @@ export class ToolSanitizationProxy {
         return;
       }
 
-      const rawBody = await this.readBody(req);
+      const rawBody = await readRequestBody(req);
       let parsed: unknown;
       try {
         parsed = rawBody.length ? JSON.parse(rawBody) : {};
@@ -525,12 +511,17 @@ export class ToolSanitizationProxy {
         await this.forwardJsonBuffered(req, res, fullUpstreamUrl, modifiedBody, mapper);
       }
     } catch (error) {
-      const err = error as Error;
-      if (this.config.verbose) {
-        this.logger.error('tool-sanitization.proxy.request-error', `Error: ${err.message}`, {
-          error: err.message,
-        });
+      if (error instanceof RequestBodyTooLargeError) {
+        respondRequestTooLarge(req, res, error, this.logger);
+        return;
       }
+      const err = error as Error;
+      this.logger.warn('tool-sanitization.proxy.request-error', `Error: ${err.message}`, {
+        error: err.message,
+        method,
+        path: requestPath,
+      });
+      if (res.writableEnded || res.destroyed || req.socket?.destroyed) return;
       if (!res.headersSent) {
         res.writeHead(502, { 'Content-Type': 'application/json' });
       }
