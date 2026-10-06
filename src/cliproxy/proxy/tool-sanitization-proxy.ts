@@ -47,6 +47,12 @@ export interface ToolSanitizationProxyConfig {
   timeoutMs?: number;
   /** Skip TLS certificate validation for self-signed remote HTTPS proxies */
   allowSelfSigned?: boolean;
+  /**
+   * Reduce tool input_schema to Gemini's supported subset (default true).
+   * Disable when every request reaches Anthropic, which accepts full JSON Schema:
+   * stripping there drops real constraints (const, allOf, exclusiveMinimum, ...).
+   */
+  sanitizeSchemas?: boolean;
 }
 
 /**
@@ -285,6 +291,7 @@ export class ToolSanitizationProxy {
       warnOnSanitize: config.warnOnSanitize ?? true,
       timeoutMs: config.timeoutMs ?? 120000,
       allowSelfSigned: config.allowSelfSigned ?? false,
+      sanitizeSchemas: config.sanitizeSchemas ?? true,
     };
   }
 
@@ -404,9 +411,13 @@ export class ToolSanitizationProxy {
       // Sanitize tools if present
       if (isRecord(modifiedBody) && Array.isArray(modifiedBody.tools)) {
         // Step 1: Sanitize input_schema properties (remove non-standard JSON Schema properties)
-        const schemaResult = sanitizeToolSchemas(
-          modifiedBody.tools as Array<{ name: string; input_schema?: Record<string, unknown> }>
-        );
+        const requestTools = modifiedBody.tools as Array<{
+          name: string;
+          input_schema?: Record<string, unknown>;
+        }>;
+        const schemaResult = this.config.sanitizeSchemas
+          ? sanitizeToolSchemas(requestTools)
+          : { tools: requestTools, totalRemoved: 0, removedByTool: [] };
 
         if (schemaResult.totalRemoved > 0) {
           for (const entry of schemaResult.removedByTool) {

@@ -416,6 +416,46 @@ describe('ToolSanitizationProxy Integration', () => {
       }
     });
 
+    it('forwards input_schema untouched when schema sanitization is disabled', async () => {
+      const proxy = new ToolSanitizationProxy({
+        upstreamBaseUrl: `http://127.0.0.1:${mockUpstreamPort}`,
+        sanitizeSchemas: false,
+      });
+      const port = await proxy.start();
+      // Claude Code-shaped schema using keywords outside Gemini's subset
+      const inputSchema = {
+        $schema: 'https://json-schema.org/draft/2020-12/schema',
+        type: 'object',
+        properties: {
+          action: { const: 'publish' },
+          limit: { type: 'integer', exclusiveMinimum: 0 },
+          files: { type: 'object', propertyNames: { maxLength: 512 } },
+          opts: { allOf: [{ type: 'object' }, { required: ['x'] }] },
+        },
+        additionalProperties: false,
+      };
+
+      try {
+        await fetch(`http://127.0.0.1:${port}/v1/messages`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'claude-opus-5-5',
+            tools: [{ name: 'tool__with__duplicate__duplicate', input_schema: inputSchema }],
+          }),
+        });
+
+        const sentTools = (lastRequest!.body as Record<string, unknown>).tools as Array<
+          Record<string, unknown>
+        >;
+        expect(sentTools[0].input_schema).toEqual(inputSchema);
+        // Tool-name sanitization still applies
+        expect(sentTools[0].name).toBe('tool__with__duplicate');
+      } finally {
+        proxy.stop();
+      }
+    });
+
     it('strips Gemini-unsupported top-level tool fields while keeping schema sanitization', async () => {
       const proxy = new ToolSanitizationProxy({
         upstreamBaseUrl: `http://127.0.0.1:${mockUpstreamPort}`,
