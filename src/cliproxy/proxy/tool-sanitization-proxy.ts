@@ -33,6 +33,7 @@ import {
 } from '../../utils/request-body';
 import {
   attachUpstreamResponseTimeout,
+  resolveUpstreamTimeoutMs,
   writeForwardResponseHead,
 } from './upstream-response-timeout';
 
@@ -289,7 +290,7 @@ export class ToolSanitizationProxy {
       upstreamBaseUrl: config.upstreamBaseUrl,
       verbose: config.verbose ?? false,
       warnOnSanitize: config.warnOnSanitize ?? true,
-      timeoutMs: config.timeoutMs ?? 120000,
+      timeoutMs: config.timeoutMs ?? resolveUpstreamTimeoutMs(),
       allowSelfSigned: config.allowSelfSigned ?? false,
       sanitizeSchemas: config.sanitizeSchemas ?? true,
     };
