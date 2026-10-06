@@ -125,7 +125,7 @@ export interface CLIProxyRoutingConfig {
 /**
  * CLIProxy request-retry configuration.
  * Controls CLIProxy's own retry-on-transient-error behavior
- * (403, 408, 500, 502, 503, 504). Defaults to disabled (0/0): retrying can
+ * (403, 408, 429, 500, 502, 503, 504). Defaults to disabled (0/0): retrying can
  * burn quota on multi-account pools, so this is opt-in.
  */
 export interface CLIProxyRetryConfig {

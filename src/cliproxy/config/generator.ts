@@ -207,7 +207,7 @@ function getSessionAffinityTtl(): string {
 
 /**
  * Number of times CLIProxy retries a request on a transient error
- * (403, 408, 500, 502, 503, 504). Opt-in via config.cliproxy.retry.request_retry;
+ * (403, 408, 429, 500, 502, 503, 504). Opt-in via config.cliproxy.retry.request_retry;
  * defaults to 0 (disabled) to avoid burning quota on multi-account pools.
  */
 function getRequestRetry(): number {
@@ -834,7 +834,7 @@ remote-management:
 ${coolingComment}
 disable-cooling: ${disableCoolingValue}
 
-# Auto-retry on transient errors (403, 408, 500, 502, 503, 504)
+# Auto-retry on transient errors (403, 408, 429, 500, 502, 503, 504)
 request-retry: ${requestRetry}
 max-retry-interval: ${maxRetryInterval}
 ${poolRoutingBlock}
