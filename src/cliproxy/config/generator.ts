@@ -5,6 +5,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+import * as yaml from 'js-yaml';
 import type { CLIProxyBackend, CLIProxyProvider, ProviderConfig } from '../types';
 import { getProviderDisplayName } from '../provider-capabilities';
 import { getModelMappingFromConfig } from '../config/base-config-loader';
@@ -963,8 +964,139 @@ function extractYamlSection(content: string, sectionKey: string): string {
 }
 
 /**
+ * CLIProxyAPI v8 roots that hold settings CCS writes in the legacy layout (server.port,
+ * observability.logs.*, management.*, routing.*, access.api-keys, oauth.auth-dir,
+ * oauth.model-alias, requests.payload, quota-exceeded.*). Regeneration rewrites them;
+ * keeping them would let their stale v8 values override the legacy ones CCS writes,
+ * because the v8 loader prefers the v8 path when both exist.
+ */
+const V8_REGENERATED_ROOTS = new Set([
+  'server',
+  'observability',
+  'management',
+  'routing',
+  'access',
+  'oauth',
+  'requests',
+  'quota-exceeded',
+]);
+
+/** Top-level keys the template emits only in some cases, so never carried over. */
+const CONDITIONALLY_GENERATED_KEYS = new Set(['max-retry-credentials', 'payload']);
+
+interface TopLevelYamlSection {
+  key: string;
+  /** Key line plus its body and comments, exactly as written. */
+  text: string;
+}
+
+interface ExistingV8Config {
+  /** Settings CCS preserves, rewritten in the legacy layout for the existing parsers. */
+  legacyView: string;
+  sections: TopLevelYamlSection[];
+  /** `api-keys` holds v8's upstream key map, so CCS's client keys go to access.api-keys. */
+  hasUpstreamKeyMap: boolean;
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Split YAML into top-level sections without parsing it, so comments and formatting survive. */
+function splitTopLevelYamlSections(content: string): TopLevelYamlSection[] {
+  const sections: TopLevelYamlSection[] = [];
+  for (const line of content.replace(/\r\n/g, '\n').split('\n')) {
+    const keyMatch = line.match(/^([^\s#][^:]*):/);
+    if (keyMatch) {
+      sections.push({ key: keyMatch[1], text: line });
+    } else if (sections.length > 0) {
+      sections[sections.length - 1].text += `\n${line}`;
+    }
+  }
+  return sections.map((section) => ({ ...section, text: section.text.replace(/\s+$/, '') }));
+}
+
+/**
+ * Read a config that CLIProxyAPI v8 has migrated to its nested layout (it adds
+ * `config-version:`). The v8 loader also accepts legacy keys and prefers the v8 path
+ * when both exist; this does the same. Returns null for legacy configs and for files
+ * js-yaml can't parse, which keeps the legacy handling.
+ */
+function readExistingV8Config(content: string): ExistingV8Config | null {
+  if (!/^config-version:/m.test(content)) {
+    return null;
+  }
+  let doc: unknown;
+  try {
+    doc = yaml.load(content);
+  } catch {
+    return null;
+  }
+  if (!isPlainObject(doc)) {
+    return null;
+  }
+  const root = doc;
+  const child = (key: string): Record<string, unknown> => {
+    const value = root[key];
+    return isPlainObject(value) ? value : {};
+  };
+  const server = child('server');
+  const clientKeys = child('access')['api-keys'] ?? root['api-keys'];
+  const view: Record<string, unknown> = {
+    host: server.host ?? root.host,
+    port: server.port ?? root.port,
+    'api-keys': Array.isArray(clientKeys)
+      ? clientKeys.filter((key) => typeof key === 'string')
+      : undefined,
+    'oauth-model-alias': child('oauth')['model-alias'] ?? root['oauth-model-alias'],
+    payload: child('requests').payload ?? root.payload,
+  };
+  const header = content.match(/^(?:#.*\r?\n)*/)?.[0] ?? '';
+  const definedView = Object.fromEntries(
+    Object.entries(view).filter(([, value]) => value !== undefined && value !== null)
+  );
+
+  return {
+    legacyView: `${header}${yaml.dump(definedView, { lineWidth: -1, forceQuotes: true, quotingType: '"' })}`,
+    sections: splitTopLevelYamlSections(content),
+    hasUpstreamKeyMap: isPlainObject(root['api-keys']),
+  };
+}
+
+/**
+ * Move the generated client key list from top-level `api-keys` (legacy layout) to
+ * `access.api-keys` (v8 layout), leaving `api-keys` to the v8 upstream key map.
+ */
+function nestClientApiKeysUnderAccess(configContent: string): string {
+  return configContent.replace(
+    /^api-keys:\n((?:[ \t]+-.*\n)*)/m,
+    (_match, items: string) => `access:\n  api-keys:\n${items.replace(/^(?=.)/gm, '  ')}`
+  );
+}
+
+/** Append the existing v8 sections that the regenerated config doesn't produce. */
+function appendKeptV8Sections(configContent: string, existing: ExistingV8Config): string {
+  let content = existing.hasUpstreamKeyMap
+    ? nestClientApiKeysUnderAccess(configContent)
+    : configContent;
+  const generatedKeys = new Set(splitTopLevelYamlSections(content).map((section) => section.key));
+  for (const section of existing.sections) {
+    if (
+      !generatedKeys.has(section.key) &&
+      !V8_REGENERATED_ROOTS.has(section.key) &&
+      !CONDITIONALLY_GENERATED_KEYS.has(section.key)
+    ) {
+      content += `${section.text}\n`;
+    }
+  }
+  return content;
+}
+
+/**
  * Force regenerate config.yaml with latest settings.
  * Preserves user-added API keys, claude-api-key section, and port settings.
+ * For a config in CLIProxyAPI's v8 layout, also keeps the sections CCS doesn't
+ * generate (upstream, the api-keys upstream map, config-version, ...).
  *
  * @param port - Default port to use if not found in existing config
  * @returns Path to new config file
@@ -982,10 +1114,14 @@ export function regenerateConfig(
   let existingAliases = '';
   let existingPayload = '';
   const preservedSections: PreservedYamlSection[] = [];
+  let existingV8: ExistingV8Config | null = null;
 
   if (fs.existsSync(configPath)) {
     try {
-      const content = fs.readFileSync(configPath, 'utf-8');
+      const rawContent = fs.readFileSync(configPath, 'utf-8');
+      // A v8-layout config is read through a legacy view; its other sections are kept below.
+      existingV8 = readExistingV8Config(rawContent);
+      const content = existingV8?.legacyView ?? rawContent;
 
       // Preserve port setting
       const portMatch = content.match(/^port:\s*(\d+)/m);
@@ -1025,7 +1161,7 @@ export function regenerateConfig(
       existingAliases = serializeOAuthModelAliasBody(preservedAliasConfig);
       existingPayload = extractYamlSection(content, 'payload');
       if (preservedAliases.prunedLegacyAliasCount > 0) {
-        writeLegacyGeminiAliasCleanupBackup(configPath, content);
+        writeLegacyGeminiAliasCleanupBackup(configPath, rawContent);
       }
     } catch {
       // Use defaults if reading fails
@@ -1049,6 +1185,10 @@ export function regenerateConfig(
   // Re-append managed top-level sections that are not part of the generated defaults.
   for (const section of preservedSections) {
     configContent += `${section.key}:\n${section.body}\n`;
+  }
+
+  if (existingV8) {
+    configContent = appendKeptV8Sections(configContent, existingV8);
   }
 
   fs.writeFileSync(configPath, configContent, { mode: 0o600 });
