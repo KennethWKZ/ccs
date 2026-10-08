@@ -734,7 +734,7 @@
         },
         {
           "file": "src/web-server/model-pricing.ts",
-          "loc": 1246
+          "loc": 1268
         },
         {
           "file": "src/cursor/cursor-executor.ts",
@@ -766,7 +766,7 @@
         },
         {
           "file": "src/cliproxy/model-catalog.ts",
-          "loc": 984
+          "loc": 1001
         },
         {
           "file": "src/cliproxy/quota/quota-manager.ts",
