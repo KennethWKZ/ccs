@@ -27,6 +27,7 @@ export const PROVIDER_PRESET_IDS = [
   'novita',
   'fireworks',
   'requesty',
+  'atlascloud',
 ] as const;
 
 export type ProviderPresetId = (typeof PROVIDER_PRESET_IDS)[number];
@@ -327,6 +328,20 @@ const RAW_PROVIDER_PRESET_DEFINITIONS: readonly ProviderPresetDefinition[] = [
     category: 'alternative',
     requiresApiKey: true,
     badge: 'OpenAI-compatible',
+  },
+  {
+    id: 'atlascloud',
+    name: 'Atlas Cloud',
+    description:
+      'Anthropic-compatible gateway for 100+ models (DeepSeek, Kimi, GLM, Qwen) via api.atlascloud.ai',
+    baseUrl: 'https://api.atlascloud.ai',
+    defaultProfileName: 'atlascloud',
+    defaultModel: 'deepseek-ai/deepseek-v4-flash',
+    apiKeyPlaceholder: 'apikey-...',
+    apiKeyHint: 'Create an API key at atlascloud.ai/console',
+    category: 'alternative',
+    requiresApiKey: true,
+    badge: 'Anthropic-compatible',
   },
 ];
 
