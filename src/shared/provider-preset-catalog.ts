@@ -338,7 +338,7 @@ const RAW_PROVIDER_PRESET_DEFINITIONS: readonly ProviderPresetDefinition[] = [
     defaultProfileName: 'atlascloud',
     defaultModel: 'deepseek-ai/deepseek-v4-flash',
     apiKeyPlaceholder: 'apikey-...',
-    apiKeyHint: 'Create an API key at atlascloud.ai/console',
+    apiKeyHint: 'Create an API key at console.atlascloud.ai/api-keys',
     category: 'alternative',
     requiresApiKey: true,
     badge: 'Anthropic-compatible',
