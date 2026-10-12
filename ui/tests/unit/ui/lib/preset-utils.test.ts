@@ -37,6 +37,7 @@ describe('claude preset utils', () => {
   it('applies the default claude preset from the catalog default model mapping', async () => {
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce({ ok: false, status: 404 })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -59,7 +60,7 @@ describe('claude preset utils', () => {
 
     expect(result).toEqual({ success: true, presetName: 'Claude Sonnet 5.5' });
 
-    const [, requestInit] = fetchMock.mock.calls[2] ?? [];
+    const [, requestInit] = fetchMock.mock.calls[3] ?? [];
     const body = JSON.parse(String(requestInit?.body));
 
     expect(body.settings.env).toMatchObject({
@@ -73,6 +74,7 @@ describe('claude preset utils', () => {
   it('skips catalog fetch when the caller already has the provider catalog cached', async () => {
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce({ ok: false, status: 404 })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ apiKey: { value: 'managed-key' } }),
@@ -84,15 +86,39 @@ describe('claude preset utils', () => {
     const result = await applyDefaultPreset('claude', undefined, MODEL_CATALOGS.claude);
 
     expect(result).toEqual({ success: true, presetName: 'Claude Sonnet 5.5' });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/settings/auth/tokens/raw');
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock).toHaveBeenNthCalledWith(1, '/api/settings/claude');
+    expect(fetchMock).toHaveBeenNthCalledWith(2, '/api/settings/auth/tokens/raw');
     expect(fetchMock).toHaveBeenNthCalledWith(
-      2,
+      3,
       '/api/settings/claude',
       expect.objectContaining({
         method: 'PUT',
       })
     );
+  });
+
+  it('leaves existing provider settings untouched', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce({ ok: true, status: 200 });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await applyDefaultPreset('claude', undefined, MODEL_CATALOGS.claude);
+
+    expect(result).toEqual({ success: true, skipped: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledWith('/api/settings/claude');
+  });
+
+  it('does not write when it cannot tell whether provider settings exist', async () => {
+    const fetchMock = vi.fn().mockRejectedValueOnce(new Error('network down'));
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await applyDefaultPreset('claude', undefined, MODEL_CATALOGS.claude);
+
+    expect(result).toEqual({ success: false });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('builds UI catalogs from upstream provider models without requiring static dropdown edits', () => {
@@ -147,6 +173,7 @@ describe('claude preset utils', () => {
   it('uses the selected visible model for quick setup fallback mappings', async () => {
     const fetchMock = vi
       .fn()
+      .mockResolvedValueOnce({ ok: false, status: 404 })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({ apiKey: { value: 'managed-key' } }),
@@ -164,7 +191,7 @@ describe('claude preset utils', () => {
 
     expect(result).toEqual({ success: true, presetName: 'Gemini Live Only' });
 
-    const [, requestInit] = fetchMock.mock.calls[1] ?? [];
+    const [, requestInit] = fetchMock.mock.calls[2] ?? [];
     const body = JSON.parse(String(requestInit?.body));
 
     expect(body.settings.env).toMatchObject({

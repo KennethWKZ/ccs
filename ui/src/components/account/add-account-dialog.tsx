@@ -254,16 +254,19 @@ export function AddAccountDialog({
     });
   }, [authFlow.error, open, powerUserModeEnabled, provider, syncPowerUserModeState, t]);
 
-  // When authFlow completes successfully (polling detected success), apply preset and close
+  // When authFlow completes successfully (polling detected success), apply preset and close.
+  // Only the first account seeds a preset; later accounts must not touch provider settings.
   useEffect(() => {
     if (!authFlow.isAuthenticating && !authFlow.error && authFlow.provider === null && open) {
       if (wasAuthenticatingRef.current) {
         wasAuthenticatingRef.current = false;
         const applyPresetAndClose = async () => {
           try {
-            const result = await applyDefaultPreset(provider, undefined, catalog);
-            if (result.success && result.presetName && isFirstAccount) {
-              toast.success(`Applied "${result.presetName}" preset`);
+            if (isFirstAccount) {
+              const result = await applyDefaultPreset(provider, undefined, catalog);
+              if (result.success && result.presetName) {
+                toast.success(`Applied "${result.presetName}" preset`);
+              }
             }
           } catch {
             // Continue to close dialog even if preset apply fails
@@ -364,9 +367,11 @@ export function AddAccountDialog({
     wasAuthenticatingRef.current = true;
     kiroImportMutation.mutate(undefined, {
       onSuccess: async () => {
-        const result = await applyDefaultPreset('kiro', undefined, catalog);
-        if (result.success && result.presetName && isFirstAccount) {
-          toast.success(`Applied "${result.presetName}" preset`);
+        if (isFirstAccount) {
+          const result = await applyDefaultPreset('kiro', undefined, catalog);
+          if (result.success && result.presetName) {
+            toast.success(`Applied "${result.presetName}" preset`);
+          }
         }
         resetAndClose();
       },

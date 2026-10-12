@@ -14,10 +14,24 @@ const kiroImportMocks = vi.hoisted(() => ({
   mutate: vi.fn(),
 }));
 
+const authFlowState = vi.hoisted(() => ({
+  provider: null as string | null,
+  isAuthenticating: false,
+}));
+
+const presetMocks = vi.hoisted(() => ({
+  applyDefaultPreset: vi.fn(),
+}));
+
+vi.mock('@/lib/preset-utils', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/preset-utils')>()),
+  applyDefaultPreset: presetMocks.applyDefaultPreset,
+}));
+
 vi.mock('@/hooks/use-cliproxy-auth-flow', () => ({
   useCliproxyAuthFlow: () => ({
-    provider: null,
-    isAuthenticating: false,
+    provider: authFlowState.provider,
+    isAuthenticating: authFlowState.isAuthenticating,
     error: null,
     authUrl: null,
     oauthState: null,
@@ -58,6 +72,12 @@ describe('AddAccountDialog power user mode', () => {
     await i18n.changeLanguage('en');
     vi.clearAllMocks();
     fetchMock.mockReset();
+    authFlowState.provider = null;
+    authFlowState.isAuthenticating = false;
+    presetMocks.applyDefaultPreset.mockResolvedValue({
+      success: true,
+      presetName: 'Claude Sonnet 5.5',
+    });
     vi.stubGlobal('fetch', fetchMock);
     Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
       configurable: true,
@@ -205,5 +225,43 @@ describe('AddAccountDialog power user mode', () => {
         startEndpoint: 'start',
       })
     );
+  });
+
+  async function completeClaudeOAuth(isFirstAccount: boolean) {
+    const onClose = vi.fn();
+    const dialog = () => (
+      <AddAccountDialog
+        open
+        onClose={onClose}
+        provider="claude"
+        displayName="Claude"
+        isFirstAccount={isFirstAccount}
+      />
+    );
+    const { rerender } = render(dialog());
+
+    await userEvent.click(screen.getByRole('button', { name: 'Authenticate' }));
+    authFlowState.provider = 'claude';
+    authFlowState.isAuthenticating = true;
+    rerender(dialog());
+    authFlowState.provider = null;
+    authFlowState.isAuthenticating = false;
+    rerender(dialog());
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+  }
+
+  it('does not apply the default preset when adding another account', async () => {
+    await completeClaudeOAuth(false);
+
+    expect(presetMocks.applyDefaultPreset).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
+  });
+
+  it('applies the default preset when adding the first account', async () => {
+    await completeClaudeOAuth(true);
+
+    expect(presetMocks.applyDefaultPreset).toHaveBeenCalledWith('claude', undefined, undefined);
+    expect(toast.success).toHaveBeenCalledWith('Applied "Claude Sonnet 5.5" preset');
   });
 });
