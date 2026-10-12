@@ -74,10 +74,7 @@ describe('AddAccountDialog power user mode', () => {
     fetchMock.mockReset();
     authFlowState.provider = null;
     authFlowState.isAuthenticating = false;
-    presetMocks.applyDefaultPreset.mockResolvedValue({
-      success: true,
-      presetName: 'Claude Sonnet 5.5',
-    });
+    presetMocks.applyDefaultPreset.mockResolvedValue({ success: true, skipped: true });
     vi.stubGlobal('fetch', fetchMock);
     Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
       configurable: true,
@@ -227,21 +224,21 @@ describe('AddAccountDialog power user mode', () => {
     );
   });
 
-  async function completeClaudeOAuth(isFirstAccount: boolean) {
+  async function completeOAuth(provider: string, displayName: string, isFirstAccount: boolean) {
     const onClose = vi.fn();
     const dialog = () => (
       <AddAccountDialog
         open
         onClose={onClose}
-        provider="claude"
-        displayName="Claude"
+        provider={provider}
+        displayName={displayName}
         isFirstAccount={isFirstAccount}
       />
     );
     const { rerender } = render(dialog());
 
     await userEvent.click(screen.getByRole('button', { name: 'Authenticate' }));
-    authFlowState.provider = 'claude';
+    authFlowState.provider = provider;
     authFlowState.isAuthenticating = true;
     rerender(dialog());
     authFlowState.provider = null;
@@ -252,16 +249,18 @@ describe('AddAccountDialog power user mode', () => {
   }
 
   it('does not apply the default preset when adding another account', async () => {
-    await completeClaudeOAuth(false);
+    await completeOAuth('claude', 'Claude', false);
 
     expect(presetMocks.applyDefaultPreset).not.toHaveBeenCalled();
     expect(toast.success).not.toHaveBeenCalled();
   });
 
   it('applies the default preset when adding the first account', async () => {
-    await completeClaudeOAuth(true);
+    presetMocks.applyDefaultPreset.mockResolvedValue({ success: true, presetName: 'GPT-5.5' });
 
-    expect(presetMocks.applyDefaultPreset).toHaveBeenCalledWith('claude', undefined, undefined);
-    expect(toast.success).toHaveBeenCalledWith('Applied "Claude Sonnet 5.5" preset');
+    await completeOAuth('codex', 'Codex', true);
+
+    expect(presetMocks.applyDefaultPreset).toHaveBeenCalledWith('codex', undefined, undefined);
+    expect(toast.success).toHaveBeenCalledWith('Applied "GPT-5.5" preset');
   });
 });
