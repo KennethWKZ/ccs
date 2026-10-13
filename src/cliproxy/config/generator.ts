@@ -61,6 +61,12 @@ export const CCS_CONTROL_PANEL_SECRET = 'ccs';
  */
 export const CLIPROXY_CONFIG_VERSION = 21;
 
+/**
+ * Default CLIProxy listen address: loopback only, so other machines on the network
+ * cannot reach the proxy. CLIProxyAPI treats an empty host as "all interfaces".
+ */
+export const CLIPROXY_DEFAULT_HOST = '127.0.0.1';
+
 export const ORIGINAL_MANAGEMENT_PANEL_REPOSITORY =
   'https://github.com/router-for-me/Cli-Proxy-API-Management-Center';
 export const PLUS_MANAGEMENT_PANEL_REPOSITORY =
@@ -712,6 +718,20 @@ function generateOAuthModelAliasSection(
 }
 
 /**
+ * Resolve the CLIProxy listen address.
+ * Precedence: CCS_CLIPROXY_HOST env (the Docker images set 0.0.0.0 so published ports
+ * reach the proxy) > host already set in config.yaml > CLIPROXY_DEFAULT_HOST.
+ * A blank env value counts as unset, because Compose passes "" for unset variables.
+ */
+function resolveListenHost(existingHost?: string): string {
+  const envHost = process.env.CCS_CLIPROXY_HOST?.trim();
+  if (envHost) {
+    return envHost;
+  }
+  return existingHost ?? CLIPROXY_DEFAULT_HOST;
+}
+
+/**
  * Generate UNIFIED config.yaml content for ALL providers
  * This enables concurrent usage of gemini/codex/agy without config conflicts.
  * CLIProxyAPI routes requests by model name to the appropriate provider.
@@ -720,13 +740,16 @@ function generateOAuthModelAliasSection(
  * @param userApiKeys - User-added API keys to preserve (default: [])
  * @param existingAliases - Existing oauth-model-alias content to merge with defaults
  * @param existingPayload - Existing payload content to merge with structured CCS rules
+ * @param existingHost - Listen address found in the existing config, if any
  */
 function generateUnifiedConfigContent(
   port: number = CLIPROXY_DEFAULT_PORT,
   userApiKeys: string[] = [],
   existingAliases?: string,
-  existingPayload?: string
+  existingPayload?: string,
+  existingHost?: string
 ): string {
+  const host = resolveListenHost(existingHost);
   const authDir = getAuthDir(); // Base auth dir - CLIProxyAPI scans subdirectories
   // Convert Windows backslashes to forward slashes for YAML compatibility
   const authDirNormalized = authDir.split(path.sep).join('/');
@@ -792,6 +815,9 @@ routing:
 # Server Settings
 # =============================================================================
 
+# Listen address. 127.0.0.1 keeps CLIProxy off the network; "" listens on all
+# interfaces. Set CCS_CLIPROXY_HOST to override (the Docker images use 0.0.0.0).
+host: ${quoteYamlString(host)}
 port: ${port}
 debug: false
 
@@ -978,6 +1004,7 @@ export function regenerateConfig(
 
   // Preserve user settings from existing config
   let effectivePort = port;
+  let existingHost: string | undefined;
   let userApiKeys: string[] = [];
   let existingAliases = '';
   let existingPayload = '';
@@ -991,6 +1018,12 @@ export function regenerateConfig(
       const portMatch = content.match(/^port:\s*(\d+)/m);
       if (portMatch) {
         effectivePort = parseInt(portMatch[1], 10);
+      }
+
+      // Preserve host setting (older generated configs had none, so a host line is the user's)
+      const hostMatch = content.match(/^host:[ \t]*(?:"([^"]*)"|'([^']*)'|([^\s#]*))/m);
+      if (hostMatch) {
+        existingHost = hostMatch[1] ?? hostMatch[2] ?? hostMatch[3] ?? '';
       }
 
       // Preserve user-added API keys (fix for issue #200)
@@ -1043,7 +1076,8 @@ export function regenerateConfig(
     effectivePort,
     userApiKeys,
     existingAliases,
-    existingPayload
+    existingPayload,
+    existingHost
   );
 
   // Re-append managed top-level sections that are not part of the generated defaults.
