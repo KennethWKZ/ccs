@@ -9,6 +9,7 @@ import {
 import { getModelMaxLevel, getModelThinkingSupport } from '../model-catalog';
 import {
   attachUpstreamResponseTimeout,
+  resolveUpstreamTimeoutMs,
   writeForwardResponseHead,
 } from '../proxy/upstream-response-timeout';
 
@@ -301,7 +302,7 @@ export class CodexReasoningProxy {
     this.config = {
       upstreamBaseUrl: config.upstreamBaseUrl,
       verbose: config.verbose ?? false,
-      timeoutMs: config.timeoutMs ?? 120000,
+      timeoutMs: config.timeoutMs ?? resolveUpstreamTimeoutMs(),
       modelMap: config.modelMap,
       defaultEffort: config.defaultEffort ?? 'medium',
       traceFilePath: config.traceFilePath ?? '',
