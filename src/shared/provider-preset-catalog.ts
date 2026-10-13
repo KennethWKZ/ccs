@@ -28,6 +28,7 @@ export const PROVIDER_PRESET_IDS = [
   'fireworks',
   'requesty',
   'atlascloud',
+  'cheaperinference',
 ] as const;
 
 export type ProviderPresetId = (typeof PROVIDER_PRESET_IDS)[number];
@@ -342,6 +343,19 @@ const RAW_PROVIDER_PRESET_DEFINITIONS: readonly ProviderPresetDefinition[] = [
     category: 'alternative',
     requiresApiKey: true,
     badge: 'Anthropic-compatible',
+  },
+  {
+    id: 'cheaperinference',
+    name: 'Cheaper Inference',
+    description: 'OpenAI-compatible LLM gateway (bare model ids, e.g. gpt-5.4-mini)',
+    baseUrl: 'https://api.cheaperinference.com/v1',
+    defaultProfileName: 'cheaperinference',
+    defaultModel: 'gpt-5.4-mini',
+    apiKeyPlaceholder: 'ci_live_...',
+    apiKeyHint: 'Create an API key at cheaperinference.com/signup',
+    category: 'alternative',
+    requiresApiKey: true,
+    badge: 'OpenAI-compatible',
   },
 ];
 
