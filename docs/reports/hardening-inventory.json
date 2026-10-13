@@ -763,7 +763,7 @@
         },
         {
           "file": "src/cliproxy/proxy/tool-sanitization-proxy.ts",
-          "loc": 1023
+          "loc": 1027
         },
         {
           "file": "src/commands/cliproxy/variant-subcommand.ts",
