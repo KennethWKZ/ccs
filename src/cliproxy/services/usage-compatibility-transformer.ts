@@ -50,9 +50,30 @@ function asBoolean(value: unknown): boolean {
   return value === true;
 }
 
-function normalizeTokens(rawTokens: unknown): CliproxyRequestDetail['tokens'] {
+/**
+ * CLIProxy's tokens.input_tokens follows the upstream's semantics: OpenAI-style
+ * providers (Codex, Gemini) include cached tokens, Claude does not. Analytics
+ * treats input as uncached, so prefer the normalized token_breakdown when it is
+ * complete.
+ */
+function resolveUncachedInputTokens(
+  tokens: Record<string, unknown>,
+  rawBreakdown: unknown
+): number {
+  const breakdown = asRecord(rawBreakdown);
+  const breakdownInput = asRecord(breakdown?.input);
+  if (breakdown?.quality === 'complete' && typeof breakdownInput?.uncached_tokens === 'number') {
+    return Math.max(0, asNumber(breakdownInput.uncached_tokens));
+  }
+  return asNumber(tokens.input_tokens);
+}
+
+function normalizeTokens(
+  rawTokens: unknown,
+  rawBreakdown?: unknown
+): CliproxyRequestDetail['tokens'] {
   const tokens = asRecord(rawTokens) ?? {};
-  const input = asNumber(tokens.input_tokens);
+  const input = resolveUncachedInputTokens(tokens, rawBreakdown);
   const output = asNumber(tokens.output_tokens);
   const reasoning = asNumber(tokens.reasoning_tokens);
   const cached = asNumber(tokens.cached_tokens);
@@ -90,7 +111,7 @@ function normalizeQueueRecord(record: unknown): CliproxyUsageQueueRecord | null 
     source,
     auth_index: authIndex,
     request_id: asString(raw.request_id, ''),
-    tokens: normalizeTokens(raw.tokens),
+    tokens: normalizeTokens(raw.tokens, raw.token_breakdown),
     failed: asBoolean(raw.failed),
   };
 }
