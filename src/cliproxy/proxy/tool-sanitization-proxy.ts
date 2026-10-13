@@ -721,6 +721,7 @@ export class ToolSanitizationProxy {
 
                     // Update content-length header
                     const headers = { ...upstreamRes.headers };
+                    delete headers['transfer-encoding'];
                     headers['content-length'] = String(Buffer.byteLength(modifiedResponse));
 
                     clientRes.writeHead(upstreamRes.statusCode || 200, headers);
@@ -734,7 +735,10 @@ export class ToolSanitizationProxy {
               }
 
               // Pass through unchanged
-              clientRes.writeHead(upstreamRes.statusCode || 200, upstreamRes.headers);
+              const headers = { ...upstreamRes.headers };
+              delete headers['transfer-encoding'];
+              headers['content-length'] = String(Buffer.byteLength(responseBody));
+              clientRes.writeHead(upstreamRes.statusCode || 200, headers);
               clientRes.end(responseBody);
               resolve();
             } catch (err) {
