@@ -6,12 +6,12 @@ Scope: `src/**/*.{ts,tsx,js,jsx,mjs,cjs}`
 
 | Metric | Value |
 |---|---:|
-| Sync fs occurrences (all) | 2520 |
-| Sync fs files affected (all) | 263 |
+| Sync fs occurrences (all) | 2543 |
+| Sync fs files affected (all) | 265 |
 | Sync fs occurrences (runtime hotpaths) | 1190 |
 | Sync fs files affected (runtime hotpaths) | 156 |
-| Legacy shim markers | 466 |
-| Legacy shim files affected | 177 |
+| Legacy shim markers | 479 |
+| Legacy shim files affected | 178 |
 
 ## Top Runtime Hotpath Sync fs Files
 
@@ -37,11 +37,11 @@ Scope: `src/**/*.{ts,tsx,js,jsx,mjs,cjs}`
 | `src/utils/config-manager.ts` | 13 |
 | `src/cliproxy/__tests__/pool-onboarding-phase5.test.ts` | 12 |
 | `src/cliproxy/executor/__tests__/variant-port-allocation.test.js` | 12 |
+| `src/cliproxy/config/generator.ts` | 10 |
 | `src/config/schemas/websearch.ts` | 10 |
 | `src/commands/cursor-command-display.ts` | 9 |
 | `src/config/migration-manager.ts` | 9 |
 | `src/cliproxy/config/__tests__/env-builder-provider-url.test.ts` | 8 |
-| `src/cliproxy/executor/__tests__/variant-port-edge-cases.test.js` | 8 |
 
 ## Explicit Shim/Re-export Files
 
@@ -92,13 +92,13 @@ Scope: `src/**/*.{ts,tsx,js,jsx,mjs,cjs}`
 | `src/web-server/usage/native-quota-collector.ts` | 1758 |
 | `src/web-server/routes/cliproxy-auth-routes.ts` | 1531 |
 | `src/cliproxy/auth/oauth-handler.ts` | 1510 |
+| `src/cliproxy/config/generator.ts` | 1283 |
 | `src/web-server/model-pricing.ts` | 1268 |
 | `src/cursor/cursor-executor.ts` | 1234 |
-| `src/cliproxy/config/generator.ts` | 1109 |
 | `src/cliproxy/auth/oauth-process.ts` | 1048 |
 | `src/cliproxy/config/env-builder.ts` | 1045 |
 | `src/web-server/routes/settings-routes.ts` | 1042 |
-| `src/cliproxy/proxy/tool-sanitization-proxy.ts` | 1023 |
+| `src/cliproxy/proxy/tool-sanitization-proxy.ts` | 1034 |
 | `src/commands/cliproxy/variant-subcommand.ts` | 1003 |
 | `src/cliproxy/model-catalog.ts` | 1001 |
 | `src/cliproxy/quota/quota-manager.ts` | 954 |
