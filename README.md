@@ -64,8 +64,9 @@ CCS gives you one stable command surface while letting you switch between:
 - multiple Claude subscriptions and isolated account contexts
 - OAuth providers like Codex, xAI/Grok, Kiro, Claude, Kimi, and more, with legacy
   Copilot compatibility for existing setups
-- API and local-model profiles like GLM, Kimi, OpenRouter, Requesty, OrcaRouter,
-  Ollama, llama.cpp, Novita, Fireworks AI, and Alibaba Coding Plan
+- API and local-model profiles like GLM, Kimi, OpenRouter, Requesty,
+  Atlas Cloud, Cheaper Inference, OrcaRouter, Ollama, llama.cpp, Novita,
+  Fireworks AI, and Alibaba Coding Plan
 
 Qwen Code account linking is not available in the bundled CLIProxy runtime yet;
 use an API-key Qwen profile such as Alibaba Coding Plan for Qwen models.
@@ -96,6 +97,17 @@ model routing through `proxy.routing`, and explicit activation helpers such as
 
 Guide:
 [OpenAI-Compatible Provider Routing](https://docs.ccs.kaitran.ca/features/proxy/openai-compatible-providers).
+
+### API Route custom profile
+
+[API Route](https://www.api-route.com/docs/quickstart) serves an Anthropic-compatible Messages endpoint. Create a custom Claude Code profile and enter your API Route key when prompted:
+
+```bash
+ccs api create api-route --base-url https://global.api-route.com --model claude-haiku-4-5 --target claude
+ccs api-route
+```
+
+Use the host without `/v1`, since Claude Code appends `/v1/messages`. Replace the example model with a Claude model ID available to your key; authenticated `GET https://global.api-route.com/v1/models` lists the IDs. API Route is a paid hosted service: see [API keys](https://www.api-route.com/api-keys) and [pricing](https://www.api-route.com/pricing). Profile settings use the existing [CCS configuration workflow](https://docs.ccs.kaitran.ca/getting-started/configuration).
 
 ### Related Project: claude-code-router
 

@@ -1,8 +1,8 @@
 {
   "scope": "src/**/*.{ts,tsx,js,jsx,mjs,cjs}",
   "syncFs": {
-    "totalOccurrences": 2520,
-    "filesAffected": 263,
+    "totalOccurrences": 2543,
+    "filesAffected": 265,
     "hotpathOccurrences": 1190,
     "hotpathFilesAffected": 156,
     "topHotpathFiles": [
@@ -304,8 +304,8 @@
     ]
   },
   "legacyShim": {
-    "totalMarkers": 466,
-    "filesAffected": 177,
+    "totalMarkers": 483,
+    "filesAffected": 180,
     "topFiles": [
       {
         "file": "src/auth/profile-detector.ts",
@@ -410,6 +410,23 @@
         ]
       },
       {
+        "file": "src/cliproxy/config/generator.ts",
+        "count": 10,
+        "calls": [],
+        "markers": [
+          "* `config-version:`). The v8 loader also accepts legacy keys and prefers the v8 path",
+          "* CLIProxyAPI v8 roots that hold settings CCS writes in the legacy layout (server.port,",
+          "* js-yaml can't parse, which keeps the legacy handling.",
+          "* keeping them would let their stale v8 values override the legacy ones CCS writes,",
+          "* Move the generated client key list from top-level `api-keys` (legacy layout) to",
+          "* when both exist; this does the same. Returns null for legacy configs and for files",
+          "/** Settings CCS preserves, rewritten in the legacy layout for the existing parsers. */",
+          "// A v8-layout config is read through a legacy view; its other sections are kept below.",
+          "// Backward compatibility: legacy sonnet thinking alias now routes to canonical model ID.",
+          "// Preserve user customizations while pruning legacy generated Gemini preview noise."
+        ]
+      },
+      {
         "file": "src/config/schemas/websearch.ts",
         "count": 10,
         "calls": [],
@@ -468,19 +485,6 @@
           "name: 'legacy-iflow',",
           "name: 'legacy',"
         ]
-      },
-      {
-        "file": "src/cliproxy/executor/__tests__/variant-port-edge-cases.test.js",
-        "count": 8,
-        "calls": [],
-        "markers": [
-          "* legacy migration, permission errors, and config corruption.",
-          "// Create legacy variant without port",
-          "assert.strictEqual(variants.legacy.port, undefined);",
-          "describe('Legacy Variant Migration', function () {",
-          "it('legacy variant does not block port allocation', function () {",
-          "legacy: {"
-        ]
       }
     ],
     "explicitShimFiles": [
@@ -488,6 +492,7 @@
       "src/cliproxy/ai-providers/__tests__/codex-plan-compatibility.test.ts",
       "src/cliproxy/ai-providers/__tests__/openai-compat-manager.test.js",
       "src/cliproxy/ai-providers/openai-compat-manager.ts",
+      "src/cliproxy/services/usage-compatibility-transformer.ts",
       "src/cliproxy/types/__tests__/types-backward-compat.test.ts",
       "src/utils/profile-compat.ts",
       "src/web-server/services/compatible-cli-docs-registry.ts"
@@ -495,16 +500,16 @@
   },
   "maintainability": {
     "typedErrors": {
-      "totalThrows": 456,
-      "typedThrows": 90,
+      "totalThrows": 458,
+      "typedThrows": 92,
       "plainThrows": 306,
       "otherThrows": 60,
-      "adoptionRatio": 0.1974,
+      "adoptionRatio": 0.2009,
       "topSubdomainsByThrows": [
         {
           "subdomain": "web-server",
-          "count": 104,
-          "typed": 17,
+          "count": 105,
+          "typed": 18,
           "plain": 45
         },
         {
@@ -649,10 +654,10 @@
       ]
     },
     "hotpathConsoleErrors": {
-      "totalOccurrences": 590,
+      "totalOccurrences": 591,
       "exemptOccurrences": 326,
-      "hotpathOccurrences": 264,
-      "filesAffected": 81,
+      "hotpathOccurrences": 265,
+      "filesAffected": 82,
       "topFiles": [
         {
           "file": "src/errors/error-handler.ts",
@@ -718,7 +723,7 @@
     },
     "largeFiles": {
       "countOver400": 94,
-      "countOver600": 42,
+      "countOver600": 43,
       "topOver400": [
         {
           "file": "src/web-server/usage/native-quota-collector.ts",
@@ -733,16 +738,16 @@
           "loc": 1510
         },
         {
+          "file": "src/cliproxy/config/generator.ts",
+          "loc": 1283
+        },
+        {
           "file": "src/web-server/model-pricing.ts",
           "loc": 1268
         },
         {
           "file": "src/cursor/cursor-executor.ts",
           "loc": 1234
-        },
-        {
-          "file": "src/cliproxy/config/generator.ts",
-          "loc": 1109
         },
         {
           "file": "src/cliproxy/auth/oauth-process.ts",
@@ -758,7 +763,7 @@
         },
         {
           "file": "src/cliproxy/proxy/tool-sanitization-proxy.ts",
-          "loc": 1023
+          "loc": 1027
         },
         {
           "file": "src/commands/cliproxy/variant-subcommand.ts",
