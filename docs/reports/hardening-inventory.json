@@ -1,10 +1,10 @@
 {
   "scope": "src/**/*.{ts,tsx,js,jsx,mjs,cjs}",
   "syncFs": {
-    "totalOccurrences": 2548,
-    "filesAffected": 266,
-    "hotpathOccurrences": 1195,
-    "hotpathFilesAffected": 157,
+    "totalOccurrences": 2573,
+    "filesAffected": 271,
+    "hotpathOccurrences": 1208,
+    "hotpathFilesAffected": 159,
     "topHotpathFiles": [
       {
         "file": "src/utils/browser/mcp-installer.ts",
@@ -582,8 +582,8 @@
     },
     "loggerCoverage": {
       "filesWithCreateLogger": 68,
-      "totalSourceFiles": 767,
-      "coverageRatio": 0.0887,
+      "totalSourceFiles": 769,
+      "coverageRatio": 0.0884,
       "subdomainsWithZeroCreateLogger": [
         "api",
         "bin",
