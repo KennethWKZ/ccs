@@ -1,10 +1,10 @@
 {
   "scope": "src/**/*.{ts,tsx,js,jsx,mjs,cjs}",
   "syncFs": {
-    "totalOccurrences": 2568,
-    "filesAffected": 270,
-    "hotpathOccurrences": 1203,
-    "hotpathFilesAffected": 158,
+    "totalOccurrences": 2573,
+    "filesAffected": 271,
+    "hotpathOccurrences": 1208,
+    "hotpathFilesAffected": 159,
     "topHotpathFiles": [
       {
         "file": "src/utils/browser/mcp-installer.ts",
@@ -582,8 +582,8 @@
     },
     "loggerCoverage": {
       "filesWithCreateLogger": 68,
-      "totalSourceFiles": 768,
-      "coverageRatio": 0.0885,
+      "totalSourceFiles": 769,
+      "coverageRatio": 0.0884,
       "subdomainsWithZeroCreateLogger": [
         "api",
         "bin",
@@ -628,7 +628,7 @@
         },
         {
           "subdomain": "cliproxy/quota",
-          "count": 31,
+          "count": 32,
           "withLogger": 5
         },
         {

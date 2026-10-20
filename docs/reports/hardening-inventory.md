@@ -6,10 +6,10 @@ Scope: `src/**/*.{ts,tsx,js,jsx,mjs,cjs}`
 
 | Metric | Value |
 |---|---:|
-| Sync fs occurrences (all) | 2568 |
-| Sync fs files affected (all) | 270 |
-| Sync fs occurrences (runtime hotpaths) | 1203 |
-| Sync fs files affected (runtime hotpaths) | 158 |
+| Sync fs occurrences (all) | 2573 |
+| Sync fs files affected (all) | 271 |
+| Sync fs occurrences (runtime hotpaths) | 1208 |
+| Sync fs files affected (runtime hotpaths) | 159 |
 | Legacy shim markers | 483 |
 | Legacy shim files affected | 180 |
 
@@ -61,7 +61,7 @@ Scope: `src/**/*.{ts,tsx,js,jsx,mjs,cjs}`
 | typed-error adoption (P4 locked subdomains) | 93.3% (28/30), target 40% |
 | hotpath console.error/warn occurrences | 265 (591 total, 326 CLI-UX exempt) |
 | hotpath console.error/warn files | 82 |
-| files with createLogger | 68/768 |
+| files with createLogger | 68/769 |
 | subdomains with zero createLogger | 14 (api, bin, channels, cliproxy, cliproxy/accounts, cliproxy/binary, cliproxy/config, cliproxy/management, cliproxy/sync, cliproxy/types, config, dispatcher, shared, types) |
 | files > 400 LOC | 94 |
 | files > 600 LOC | 43 |
