@@ -1685,7 +1685,8 @@ async function getNativeAccountRowsMultiProfile(
       continue;
     }
     tasks.push(
-      collectClaudeRowForProfile(p, deps, force).then((r) => {
+      collectClaudeRowForProfile(p, deps, force)
+        .then((r) => {
           if (!r) return null;
           const marked = markDefaultAndSyncCache(claudeProfileStates, p, r, isDefault);
           return isDefault ? marked : markPausedAndSyncCache(claudeProfileStates, p, marked);
@@ -1708,7 +1709,8 @@ async function getNativeAccountRowsMultiProfile(
       continue;
     }
     tasks.push(
-      collectCodexRowForProfile(p, deps, force).then((r) => {
+      collectCodexRowForProfile(p, deps, force)
+        .then((r) => {
           if (!r) return null;
           const marked = markDefaultAndSyncCache(codexProfileStates, p, r, isDefault);
           return isDefault ? marked : markPausedAndSyncCache(codexProfileStates, p, marked);

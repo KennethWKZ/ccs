@@ -126,9 +126,7 @@ export function linkInstancePlugins(
     const localEntryPath = path.join(linkPath, metadataName);
     const localStats = getLstatSync(localEntryPath);
     if (localStats?.isSymbolicLink()) {
-      runGuardedInstanceMutation(assertInstanceIdentity, () =>
-        fs.unlinkSync(localEntryPath)
-      );
+      runGuardedInstanceMutation(assertInstanceIdentity, () => fs.unlinkSync(localEntryPath));
     }
   }
 
